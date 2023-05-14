@@ -10,11 +10,11 @@
             <div class="row">
                 <div class="col-sm">
                     <label for="TODOInput" class="form-label">Enter new Todo</label>
-                    <input type="text" class="form-control" id="TODOInput" placeholder="your TODO">
+                    <input type="text" v-model="todo_desc" class="form-control" id="TODOInput" placeholder="your TODO">
                 </div>
             </div> <br>
-            <button class="btn btn-outline-primary ms-2" style="margin-right: 20px;">Add</button>
-            <button type="button" class="btn btn-outline-danger">Cancel</button>
+            <button class="btn btn-outline-primary ms-2" @click="add()" style="margin-right: 20px;">Add</button>
+            <button type="button" class="btn btn-outline-danger" @click="this.todo_desc=''">Cancel</button>
         </div>
         <div class="container">
             <table class="table" style="margin-top: 10px;">
@@ -45,25 +45,37 @@
 <script>
 export default {
     name: 'StartPage',
-    todo_desc: '',
-    todo_progress: 0,
-
+    
     data() {
         return {
+            todo_desc: '',
+            todo_progress: 0,
             todos: [
                 {
                     todo: 'make homework',
-                    progress: '20%'
+                    progress: 78
                 },
                 {
                     todo: 'watch tv',
-                    progress: '56%'
+                    progress: 56
                 }
             ]
         }
     },
 
     methods: {
+        add: function() {
+            if (this.todo_desc.length === 0) {
+                return;
+            } else {
+                this.todos.push({
+                    todo: this.todo_desc,
+                    progress: 0
+                })
+            }
+
+        },
+
         edit: function () {
 
         },
