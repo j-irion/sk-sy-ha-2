@@ -10,7 +10,9 @@
             <div class="row">
                 <div class="col-sm">
                     <label for="TODOInput" class="form-label">Enter new Todo</label>
-                    <input type="text" v-model="todo_desc" class="form-control" id="TODOInput" placeholder="your TODO">
+                    <input type="text" v-model="text" class="form-control" id="TODOInput" placeholder="your TODO">
+                    <input type="date" v-model="date" class="form-control">
+                    <input type="number" v-model="percentage" class="form-control">
                 </div>
             </div> <br>
             <button class="btn btn-outline-primary ms-2" @click="add()" style="margin-right: 20px;">Add</button>
@@ -28,61 +30,114 @@
                 </thead>
                 <tbody>
                     <tr v-for="(todo, index) in todos" :key="index">
-                        <td>{{ todo.todo }}</td>
-                        <td>{{ todo.progress }}</td>
+                        <td>{{ todo.text }}</td>
+                        <td>{{ todo.date }}</td>
+                        <td>{{ todo.percentage }}</td>
                         <td> <button class="btn btn-outline-primary ms-2">Edit</button></td>
-                        <td> <button class="btn btn-outline-danger" @click="kill(index)">Delete</button></td>
+                        <td> <button class="btn btn-outline-danger" @click="deleteTodo(todo._id)">Delete</button></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
         <footer class="bg-body-tertiary py-4 fixed-bottom">
-            <button @click="$router.push('impressum')" class="btn">Impressum</button>
+            <button @click="impressumVisible = true" class="btn" data-bs-toggle="modal" data-bs-target="#impressumModal">Impressum</button>
         </footer>
+
+        <div class="modal fade" id="impressumModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Impressum</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Julius Irion</p>
+                        <p>Hans Tamar</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 </template>
   
 <script>
+
 export default {
     name: 'StartPage',
     
     data() {
         return {
-            todo_desc: '',
-            todo_progress: 0,
-            todos: [
-                {
-                    todo: 'make homework',
-                    progress: 78
-                },
-                {
-                    todo: 'watch tv',
-                    progress: 56
-                }
-            ]
+            text: '',
+            date: '',
+            percentage: 0,
+            todos: [],
+            doneLoading: false,
+            impressumVisible: false,
+        };
+    },
+    created: function() {
+        this.fetchTodo();
+    },
+    watch: {
+        $route: function() {
+            let self = this;
+            self.doneLoading = false;
+            self.fetchData().then(() => self.doneLoading = true);
         }
     },
 
     methods: {
-        add: function() {
-            if (this.todo_desc.length === 0) {
-                return;
-            } else {
-                this.todos.push({
-                    todo: this.todo_desc,
-                    progress: 0
+        showImpressum() {
+            console.log('test');
+            this.impressumVisible = true;
+        },
+
+        fetchTodo() {
+            this.$http.get('/').then(response => {
+                this.todos = response.data;
+            });
+        },
+
+        add() {
+            if (this.text.length === 0) return;
+            let todo = {
+                text: this.text,
+                date: this.date,
+                percentage: this.percentage,
+                done: false,
+            };
+            console.log(todo);
+            this.$http
+                .post('/', todo)
+                .then(() => {
+                    this.clearTodo();
+                    this.fetchTodo();
                 })
-            }
-
+                .catch(error => console.log(error));
         },
 
-        edit: function () {
-
+        updateTodo(todo) {
+            let id = todo._id;
+            this.$http
+                .put(`/${id}`, todo)
+                .then(response => console.log(response))
+                .catch(error => console.log(error));
         },
 
-        kill: function (index) {
-            this.todos.splice(index, 1)
-        }
+        deleteTodo(id) {
+            this.$http.delete(`/${id}`).then(() => this.fetchTodo());
+        },
+
+        clearTodo() {
+            this.text = '';
+            this.date = '';
+            this.percentage = '';
+        },
     }
 
 }

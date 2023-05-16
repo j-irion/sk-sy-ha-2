@@ -1,11 +1,14 @@
 <template>
   <router-view />
+  <StartPage></StartPage>
 </template>
 
 <script>
+import StartPage from './views/StartPage.vue';
 
 export default {
   name: 'App',
+  components: { StartPage }
 
 }
 </script>
