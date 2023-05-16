@@ -33,7 +33,7 @@
                         <td>{{ todo.text }}</td>
                         <td>{{ todo.date }}</td>
                         <td>{{ todo.percentage }}</td>
-                        <td> <button class="btn btn-outline-primary ms-2">Edit</button></td>
+                        <td> <button class="btn btn-outline-primary ms-2" @click="changingTodo = todo" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button></td>
                         <td> <button class="btn btn-outline-danger" @click="deleteTodo(todo._id)">Delete</button></td>
                     </tr>
                 </tbody>
@@ -62,6 +62,26 @@
             </div>
         </div>
 
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Edit Todo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" class="form-control" v-model="changingTodo.text">
+                        <input type="date" class="form-control" v-model="changingTodo.date">
+                        <input type="number" class="form-control" v-model="changingTodo.percentage">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="updateTodo(changingTodo)">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </body>
 </template>
   
@@ -77,7 +97,12 @@ export default {
             percentage: 0,
             todos: [],
             doneLoading: false,
-            impressumVisible: false,
+            changingTodo: {
+                text: '',
+                date: '',
+                percentage: 0,
+                done: false,
+            },
         };
     },
     created: function() {
@@ -92,10 +117,6 @@ export default {
     },
 
     methods: {
-        showImpressum() {
-            console.log('test');
-            this.impressumVisible = true;
-        },
 
         fetchTodo() {
             this.$http.get('/').then(response => {
@@ -127,6 +148,7 @@ export default {
                 .put(`/${id}`, todo)
                 .then(response => console.log(response))
                 .catch(error => console.log(error));
+            this.clearChangingTodo();
         },
 
         deleteTodo(id) {
@@ -137,6 +159,15 @@ export default {
             this.text = '';
             this.date = '';
             this.percentage = '';
+        },
+
+        clearChangingTodo() {
+            this.changingTodo = {
+                text: '',
+                date: '',
+                percentage: 0,
+                done: false,
+            };
         },
     }
 
