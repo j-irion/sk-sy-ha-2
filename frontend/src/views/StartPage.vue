@@ -9,30 +9,33 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm">
-                    <label for="TODOInput" class="form-label">Enter new Todo</label>
-                    <input type="text" v-model="text" class="form-control" id="TODOInput" placeholder="your TODO">
-                    <input type="date" v-model="date" class="form-control">
-                    <input type="number" v-model="percentage" class="form-control">
+                    <label for="textInput" class="form-label">Todo</label>
+                    <input id="textInput" type="text" v-model="text" class="form-control" placeholder="your TODO">
+                    <label for="dateInput" class="form-label">Date</label>
+                    <input id="dateInput" type="date" v-model="date" class="form-control">
+                    <label for="percentageInput" class="form-label">Percentage Done</label>
+                    <input id="percenTageInput" type="number" v-model="percentage" class="form-control">
                 </div>
             </div> <br>
             <button class="btn btn-outline-primary ms-2" @click="add()" style="margin-right: 20px;">Add</button>
-            <button type="button" class="btn btn-outline-danger" @click="this.todo_desc=''">Cancel</button>
+            <button type="button" class="btn btn-outline-danger" @click="clearTodo()">Cancel</button>
         </div>
         <div class="container">
             <table class="table" style="margin-top: 10px;">
                 <thead>
                     <tr>
+                        <th scope="col"></th>
                         <th scope="col">Todo</th>
-                        <th scope="col">Progress</th>
-                        <th scope="col">#</th>
-                        <th scope="col">#</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Percentage Done</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(todo, index) in todos" :key="index">
+                        <td><input class="form-check-input" type="checkbox" value="" v-model="todo.done" @change="updateTodoStatus(todo)"></td>
                         <td>{{ todo.text }}</td>
                         <td>{{ todo.date }}</td>
-                        <td>{{ todo.percentage }}</td>
+                        <td>{{ todo.percentage }}%</td>
                         <td> <button class="btn btn-outline-primary ms-2" @click="changingTodo = todo" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button></td>
                         <td> <button class="btn btn-outline-danger" @click="deleteTodo(todo._id)">Delete</button></td>
                     </tr>
@@ -93,7 +96,7 @@ export default {
     data() {
         return {
             text: '',
-            date: '',
+            date: new Date().toLocaleDateString('en-CA'),
             percentage: 0,
             todos: [],
             doneLoading: false,
@@ -126,6 +129,7 @@ export default {
 
         add() {
             if (this.text.length === 0) return;
+            if (this.percentage < 0 || this.percentage > 99) return;
             let todo = {
                 text: this.text,
                 date: this.date,
@@ -143,6 +147,8 @@ export default {
         },
 
         updateTodo(todo) {
+            if (todo.text.length === 0) return;
+            if (todo.percentage < 0 || todo.percentage > 99) return;
             let id = todo._id;
             this.$http
                 .put(`/${id}`, todo)
@@ -157,8 +163,8 @@ export default {
 
         clearTodo() {
             this.text = '';
-            this.date = '';
-            this.percentage = '';
+            this.date = new Date().toLocaleDateString('en-CA');
+            this.percentage = 0;
         },
 
         clearChangingTodo() {
@@ -168,6 +174,12 @@ export default {
                 percentage: 0,
                 done: false,
             };
+        },
+
+        updateTodoStatus(todo) {
+            this.$http.put(`/${todo._id}`, todo)
+                .then(response => console.log(response))
+                .catch(error => console.log(error));
         },
     }
 
